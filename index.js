@@ -48,6 +48,13 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
+    // update
+    app.get('/product/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
+      res.send(result);
+    })
 
     app.post('/product', async (req, res) => {
       const newProduct = req.body;
@@ -55,10 +62,32 @@ async function run() {
       const result = await productCollection.insertOne(newProduct);
       res.send(result);
     })
-
-    app.delete('/product/:id', async(req, res)=>{
+    // update
+    app.put('/product/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateProduct = req.body;
+      const product = {
+        $set: {
+          pName: updateProduct.pName,
+          bName: updateProduct.bName,
+          pType: updateProduct.pType,
+          pPrice: updateProduct.pPrice,
+          pDesc: updateProduct.pDesc,
+          pRating: updateProduct.pRating,
+          pImage: updateProduct.pImage,
+        },
+      };
+      // console.log(newProduct);
+      const result = await productCollection.updateOne(filter, product, options);
+      res.send(result);
+    })
+
+
+    app.delete('/product/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
       const result = await productCollection.deleteOne(query);
       res.send(result);
     })

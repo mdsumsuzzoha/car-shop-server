@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion, ObjectId} = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 require('dotenv').config()
 const app = express();
@@ -34,22 +34,37 @@ async function run() {
             }
         });
 
-
         const productsCollection = client.db("productsDB").collection("products");
+        const cartCollection = client.db("cartDB").collection("cartItems");
 
+        // new products get/read
         app.get('/products', async (req, res) => {
             const cursor = productsCollection.find()
             const result = await cursor.toArray();
             res.send(result)
         })
-
-        app.get('/products/:id', async (req,res)=>{
+        // p.Id/date add to cart get/read
+        app.get('/cartItems', async (req, res) => {
+            const cursor = cartCollection.find()
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+        // new products get/read by id
+        app.get('/products/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
-            const result =await productsCollection.findOne(query);
+            const query = { _id: new ObjectId(id) }
+            const result = await productsCollection.findOne(query);
+            res.send(result);
+        })
+        // p.Id/date add to cart get/read by id
+        app.get('/cartItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await cartCollection.findOne(query);
             res.send(result);
         })
 
+        // new products add
         app.post('/products', async (req, res) => {
             const newProduct = req.body;
             // console.log('new product', product);
@@ -57,7 +72,16 @@ async function run() {
             res.send(result);
 
         })
+        // p.Id/date add to cart
+        app.post('/cartItems', async (req, res) => {
+            const newCartItem = req.body;
+            console.log('new product', newCartItem);
+            const result = await cartCollection.insertOne(newCartItem);
+            res.send(result);
 
+        })
+
+        // products db update
         app.put('/products/:id', async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -78,10 +102,17 @@ async function run() {
             res.send(result);
         })
 
-        app.delete('/products/:id', async (req,res)=>{
+        app.delete('/products/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: new ObjectId(id)}
+            const query = { _id: new ObjectId(id) }
             const result = await productsCollection.deleteOne(query);
+            res.send(result);
+        })
+        // p.Id/date add to cart delete/remove by id
+        app.delete('/cartItems/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await cartCollection.deleteOne(query);
             res.send(result);
         })
 
